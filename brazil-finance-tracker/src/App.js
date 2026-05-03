@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LayoutDashboard, ArrowUpDown, Tag, Upload, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, ArrowUpDown, Tag, Upload, TrendingUp, Menu, X } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
@@ -30,6 +30,7 @@ export default function App() {
   const [transactions, setTxLocal] = useState([]);
   const [categories, setCatsLocal] = useState([]);
   const [toasts, setToasts] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const stored = getTransactions();
@@ -56,12 +57,28 @@ export default function App() {
 
   const pageProps = { transactions, updateTransactions, categories, updateCategories, addToast, setPage };
 
+  const navigateTo = useCallback((id) => {
+    setPage(id);
+    setSidebarOpen(false);
+  }, []);
+
   return (
     <div className="app">
-      <aside className="sidebar">
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`sidebar${sidebarOpen ? ' sidebar--open' : ''}`}>
         <div className="sidebar-logo">
           <h1>Minhas Finanças</h1>
           <span>Open Finance BR</span>
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Fechar menu"
+          >
+            <X size={20} />
+          </button>
         </div>
         <nav className="sidebar-nav">
           <div className="nav-section">
@@ -70,7 +87,7 @@ export default function App() {
               <div
                 key={id}
                 className={`nav-item${page === id ? ' active' : ''}`}
-                onClick={() => setPage(id)}
+                onClick={() => navigateTo(id)}
               >
                 <Icon size={18} />
                 {label}
@@ -85,6 +102,13 @@ export default function App() {
 
       <main className="main">
         <header className="topbar">
+          <button
+            className="hamburger-btn"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Abrir menu"
+          >
+            <Menu size={22} />
+          </button>
           <div className="topbar-title">{PAGE_TITLES[page]}</div>
           <div className="topbar-actions">
             <span style={{ fontSize: 13, color: 'var(--gray-500)' }}>
