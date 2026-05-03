@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Upload, CheckCircle, AlertCircle, Sparkles, Download } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, Sparkles, Download, CalendarRange, Trash2 } from 'lucide-react';
 import { importCSV, importOFX, generateDemoData } from '../utils/importers';
+import { loadSampleData, removeSampleData, SAMPLE_TRANSACTIONS_2026 } from '../utils/sampleData';
 import { formatBRL, formatDate } from '../utils/format';
 
 export default function Import({ transactions, updateTransactions, categories, addToast, setPage }) {
@@ -69,6 +70,23 @@ export default function Import({ transactions, updateTransactions, categories, a
     updateTransactions(demo);
     addToast('Dados de demonstração carregados! 🎉');
     setPage('dashboard');
+  };
+
+  const handleLoadSample2026 = () => {
+    const added = loadSampleData(transactions, updateTransactions);
+    if (added === 0) {
+      addToast('Dados de 2026 já estão carregados.');
+    } else {
+      addToast(`${added} transações de Jan–Mai 2026 adicionadas!`);
+      setPage('dashboard');
+    }
+  };
+
+  const hasSample2026 = transactions.some(t => t.id.startsWith('smp_'));
+
+  const handleRemoveSample2026 = () => {
+    const removed = removeSampleData(transactions, updateTransactions);
+    addToast(`${removed} transações de amostra removidas.`);
   };
 
   const downloadSampleCSV = () => {
@@ -153,6 +171,28 @@ export default function Import({ transactions, updateTransactions, categories, a
                     Modelo de CSV compatível para testar a importação
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="card" style={{ cursor: 'pointer', gridColumn: '1 / -1', borderColor: '#bfdbfe' }} onClick={handleLoadSample2026}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <div><CalendarRange size={32} color="#2563eb" /></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Carregar Transações de Amostra — Jan a Mai 2026</div>
+                  <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>
+                    Adiciona {SAMPLE_TRANSACTIONS_2026.filter(t => t.type === 'expense').length} despesas (total ≤ R$20.000) e{' '}
+                    {SAMPLE_TRANSACTIONS_2026.filter(t => t.type === 'income').length} receitas de R$20.000 (dias 15 e último de cada mês) — Jan a Mai 2026
+                  </div>
+                </div>
+                {hasSample2026 && (
+                  <button
+                    className="btn btn-outline"
+                    style={{ fontSize: 12, padding: '4px 10px', color: 'var(--danger)', borderColor: 'var(--danger)', whiteSpace: 'nowrap' }}
+                    onClick={e => { e.stopPropagation(); handleRemoveSample2026(); }}
+                  >
+                    <Trash2 size={13} /> Remover
+                  </button>
+                )}
               </div>
             </div>
           </div>
